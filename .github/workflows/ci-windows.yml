@@ -262,14 +262,18 @@ jobs:
           # build custom installer executable that wraps the MSI payload
           powershell -NoProfile -ExecutionPolicy Bypass -File ../packaging/windows/bootstrapper/build_bootstrapper.ps1 -BuildDir "$(cygpath -w "$(pwd)")"
 
-          msi_file=$(ls -1 ./cpack_artifacts/*.msi | head -n 1)
-          installer_exe=$(ls -1 ./cpack_artifacts/VibepolloSetup.exe ./cpack_artifacts/*-installer.exe 2>/dev/null | head -n 1)
-          portable_zip=$(ls -1 ./cpack_artifacts/*.zip | head -n 1)
+          # Collect the built artifacts. Use find (not `ls a b` with a non-matching glob,
+          # which returns exit 2 and aborts under set -e even when the wanted file exists).
+          echo "cpack_artifacts contents:"; ls -l ./cpack_artifacts || true
+          msi_file=$(find ./cpack_artifacts -maxdepth 1 -name '*.msi' | head -n 1)
+          installer_exe=$(find ./cpack_artifacts -maxdepth 1 \( -name 'VibepolloSetup.exe' -o -name '*-installer.exe' \) | head -n 1)
+          portable_zip=$(find ./cpack_artifacts -maxdepth 1 -name '*.zip' | head -n 1)
 
-          # move
-          mv "${msi_file}" ../artifacts/Vibepollo-${{ matrix.name }}-installer.msi
-          mv "${installer_exe}" ../artifacts/Vibepollo-${{ matrix.name }}-installer.exe
-          mv "${portable_zip}" ../artifacts/Vibepollo-${{ matrix.name }}-portable.zip
+          # copy whatever was produced into the upload dir
+          [ -n "${msi_file}" ]      && cp "${msi_file}"      ../artifacts/Vibepollo-${{ matrix.name }}-installer.msi
+          [ -n "${installer_exe}" ] && cp "${installer_exe}" ../artifacts/Vibepollo-${{ matrix.name }}-installer.exe
+          [ -n "${portable_zip}" ]  && cp "${portable_zip}"  ../artifacts/Vibepollo-${{ matrix.name }}-portable.zip
+          echo "collected artifacts:"; ls -l ../artifacts
 
       - name: Run tests
         id: test
