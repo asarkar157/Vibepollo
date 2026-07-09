@@ -213,15 +213,15 @@ jobs:
           choco install wixtoolset -y
 
       # package-lock.json is gitignored, but the web-ui cmake target runs `npm ci`, which
-      # requires a lockfile. Generate one from package.json before the build. A recent vite
-      # bump to 8.x conflicts with @codecov/vite-plugin's vite 4-6 peer range, so allow
-      # legacy peer resolution; the .npmrc makes the later cmake `npm ci` honor it too.
+      # requires a lockfile. Do a full install so the lockfile records the platform-specific
+      # rollup native binding (npm's optional-deps handling drops it with --package-lock-only).
+      # The .npmrc keeps peer resolution lenient for both this step and the later cmake npm ci.
       - name: Generate web UI lockfile
         shell: msys2 {0}
         working-directory: src_assets/common/assets/web
         run: |
           echo "legacy-peer-deps=true" > .npmrc
-          npm install --package-lock-only --no-audit --no-fund --legacy-peer-deps
+          npm install --no-audit --no-fund --legacy-peer-deps
 
       - name: Build Windows
         shell: msys2 {0}
