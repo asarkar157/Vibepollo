@@ -19,6 +19,11 @@ option(SUNSHINE_CONFIGURE_ONLY "Configure special files only, then exit." OFF)
 option(SUNSHINE_ENABLE_TRAY "Enable system tray icon." ON)
 option(SUNSHINE_ENABLE_WEBRTC "Enable WebRTC streaming support (Windows only)." OFF)
 
+# Bundle the SudoVDA virtual display driver binaries in the Windows installer. Defaults ON
+# (release builds ship the driver). Turn OFF when the driver binaries aren't available in the
+# source tree (e.g. CI without the private driver artifacts) to build an installer without it.
+option(SUNSHINE_BUNDLE_SUDOVDA "Bundle the SudoVDA virtual display driver in the Windows installer." ON)
+
 option(SUNSHINE_SYSTEM_WAYLAND_PROTOCOLS "Use system installation of wayland-protocols rather than the submodule." OFF)
 
 if(APPLE)
