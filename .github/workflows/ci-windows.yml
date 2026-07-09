@@ -227,6 +227,8 @@ jobs:
             -S . \
             -DCMAKE_BUILD_TYPE=RelWithDebInfo \
             -DSUNSHINE_ASSETS_DIR=assets \
+            -DZLIB="$(cygpath -m "${MINGW_PREFIX}/bin/zlib1.dll")" \
+            -DSUNSHINE_BUNDLE_SUDOVDA=OFF \
             -DSUNSHINE_PUBLISHER_NAME='${{ github.repository_owner }}' \
             -DSUNSHINE_PUBLISHER_WEBSITE='https://github.com/${{ github.repository }}' \
             -DSUNSHINE_PUBLISHER_ISSUE_URL='https://github.com/${{ github.repository }}/issues'
