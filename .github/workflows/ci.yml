@@ -1,0 +1,35 @@
+---
+name: CI
+
+permissions:
+  contents: read
+
+# Push-triggered CI caller. Delegates the Windows build/package/test to the
+# reusable ci-windows.yml (MSYS2 ucrt64 -> cmake/ninja -> CPack WIX/ZIP ->
+# bootstrapper exe), which uploads the installer as the `build-Windows-AMD64`
+# artifact. Runs on every branch push so a plain push produces a downloadable build.
+on:
+  push:
+    branches: ['**']
+    paths-ignore:
+      - '**.md'
+      - '**.png'
+      - '**.jpg'
+      - 'docs/**'
+  pull_request:
+    branches: [master]
+    paths-ignore:
+      - '**.md'
+      - '**.png'
+      - '**.jpg'
+      - 'docs/**'
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    name: Build Windows
+    uses: ./.github/workflows/ci-windows.yml
+    with:
+      release_commit: ${{ github.sha }}
+      release_version: 1.15.20
+    secrets: inherit
