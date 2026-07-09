@@ -181,8 +181,11 @@ jobs:
           git clone --depth 1 https://github.com/TsudaKageyu/minhook.git "${RUNNER_TEMP}/minhook"
           cmake -S "${RUNNER_TEMP}/minhook" -B "${RUNNER_TEMP}/minhook/build" -G Ninja -DCMAKE_BUILD_TYPE=Release
           cmake --build "${RUNNER_TEMP}/minhook/build"
-          lib=$(find "${RUNNER_TEMP}/minhook/build" \( -name 'libMinHook.a' -o -name 'libminhook.a' \) | head -1)
+          # The static lib name varies by toolchain (libMinHook.a, libminhook.a,
+          # minhook.x64.a, ...); match any of them case-insensitively.
+          lib=$(find "${RUNNER_TEMP}/minhook/build" -iname '*minhook*.a' | head -1)
           echo "built MinHook static lib: $lib"
+          if [ -z "$lib" ]; then echo "ERROR: no MinHook static lib found" >&2; find "${RUNNER_TEMP}/minhook/build" -name '*.a' >&2; exit 1; fi
           cp "$lib" "${MINGW_PREFIX}/lib/libMinHook.a"
           cp "${RUNNER_TEMP}/minhook/include/MinHook.h" "${MINGW_PREFIX}/include/MinHook.h"
           ls -l "${MINGW_PREFIX}/lib/libMinHook.a" "${MINGW_PREFIX}/include/MinHook.h"
