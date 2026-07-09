@@ -5,9 +5,12 @@
 #pragma once
 
 // standard includes
+#include <optional>
+#include <string>
 #include <thread>
 
 // local includes
+#include "platform/common.h"
 #include "task_pool.h"
 
 namespace thread_pool_util {
@@ -25,6 +28,11 @@ namespace thread_pool_util {
     std::mutex _lock;
 
     bool _continue;
+
+    // When set, every worker thread adjusts its own OS scheduling priority to this
+    // value before servicing tasks.
+    std::optional<platf::thread_priority_e> _priority;
+    std::string _thread_name {"TaskPool::worker"};
 
   public:
     ThreadPool():
@@ -83,6 +91,18 @@ namespace thread_pool_util {
       }
     }
 
+    /**
+     * @brief Start the pool with a dedicated name and OS thread priority for its workers.
+     * @param threads Number of worker threads.
+     * @param priority OS scheduling priority every worker adjusts itself to on start.
+     * @param name Name reported to development tools (e.g. debuggers, `set_thread_name`).
+     */
+    void start(int threads, platf::thread_priority_e priority, std::string name) {
+      _priority = priority;
+      _thread_name = std::move(name);
+      start(threads);
+    }
+
     void stop() {
       std::lock_guard lg(_lock);
 
@@ -98,6 +118,10 @@ namespace thread_pool_util {
 
   public:
     void _main() {
+      if (_priority) {
+        platf::adjust_thread_priority(*_priority);
+      }
+
       while (_continue) {
         if (auto task = this->pop()) {
           (*task)->run();

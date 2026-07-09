@@ -416,7 +416,10 @@ int main(int argc, char *argv[]) {
 
 #endif
 
-  task_pool.start(1);
+  // Run at critical OS scheduling priority so client input dispatch (which shares
+  // this pool with other housekeeping tasks) isn't starved relative to Sunshine's
+  // own encode (high) and audio capture (critical) threads under CPU pressure.
+  task_pool.start(1, platf::thread_priority_e::critical, "TaskPool::worker");
 
   // Apply any pending auto-downloaded update before normal startup.
   // If a downloaded installer is ready, launch it silently and exit so the installer
