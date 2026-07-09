@@ -172,8 +172,9 @@ jobs:
       # the ucrt64 prefix so the REQUIRED find_library(libMinHook.a) in
       # cmake/dependencies/windows.cmake succeeds. (Locally it's already in the prefix.)
       - name: Build and install MinHook
-        env:
-          MSYSTEM: ${{ matrix.msystem }}
+        # NB: do NOT set env.MSYSTEM here — setup-msys2 configures the msys2 {0} shell with
+        # the correct uppercase UCRT64. Overriding it with the lowercase matrix value makes
+        # the shell fall back to plain MSYS mode, so /ucrt64/bin (cmake, ninja) drops off PATH.
         shell: msys2 {0}
         run: |
           set -e
