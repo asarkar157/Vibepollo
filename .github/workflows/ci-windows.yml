@@ -212,6 +212,13 @@ jobs:
         run: |
           choco install wixtoolset -y
 
+      # package-lock.json is gitignored, but the web-ui cmake target runs `npm ci`, which
+      # requires a lockfile. Generate one from package.json before the build.
+      - name: Generate web UI lockfile
+        shell: msys2 {0}
+        working-directory: src_assets/common/assets/web
+        run: npm install --package-lock-only --no-audit --no-fund
+
       - name: Build Windows
         shell: msys2 {0}
         env:
